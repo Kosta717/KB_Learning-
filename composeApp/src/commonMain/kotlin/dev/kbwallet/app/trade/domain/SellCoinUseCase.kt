@@ -6,6 +6,8 @@ import dev.kbwallet.app.core.domain.Result
 import dev.kbwallet.app.core.domain.coin.Coin
 import dev.kbwallet.app.portfolio.domain.PortfolioRepository
 import kotlinx.coroutines.flow.first
+import kotlinx.datetime.Clock
+import dev.kbwallet.app.portfolio.data.local.TransactionEntity
 
 class SellCoinUseCase(
     private val portfolioRepository: PortfolioRepository,
@@ -37,6 +39,20 @@ class SellCoinUseCase(
                     )
                 }
                 portfolioRepository.updateCashBalance(balance + amountInFiat)
+                
+                portfolioRepository.saveTransaction(
+                    TransactionEntity(
+                        type = "SELL",
+                        coinId = coin.id,
+                        coinName = coin.name,
+                        coinSymbol = coin.symbol,
+                        amountFiat = amountInFiat,
+                        amountCrypto = sellAmountInUnit,
+                        price = price,
+                        timestamp = Clock.System.now().toEpochMilliseconds()
+                    )
+                )
+                
                 return Result.Success(Unit)
             }
             is Result.Error -> {

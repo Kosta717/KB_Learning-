@@ -10,11 +10,11 @@ data class KBWalletColorsPalette(
     var lossRed: Color = Color.Unspecified,
 )
 
-val ProfitGreenColor = Color(color = 0xFF32de84)
-val LossRedColor = Color(color = 0xFFD2122E)
+val ProfitGreenColor = Color(color = 0xFF00FF00)
+val LossRedColor = Color(color = 0xFFFF3B30)
 
-val DarkProfitGreenColor = Color(color = 0xFF32de84)
-val DarkLossRedColor = Color(color = 0xFFD2122E)
+val DarkProfitGreenColor = Color(color = 0xFF00FF00)
+val DarkLossRedColor = Color(color = 0xFFFF3B30)
 
 val LigthKBWalletColorsPalette = KBWalletColorsPalette(
     profitGreen = ProfitGreenColor,
@@ -22,8 +22,8 @@ val LigthKBWalletColorsPalette = KBWalletColorsPalette(
 )
 
 val DarkKBWalletColorsPalette = KBWalletColorsPalette(
-    profitGreen = ProfitGreenColor,
-    lossRed = LossRedColor
+    profitGreen = DarkProfitGreenColor,
+    lossRed = DarkLossRedColor
 )
 
 val LocalKBWalletColorsPalette = compositionLocalOf { KBWalletColorsPalette() }

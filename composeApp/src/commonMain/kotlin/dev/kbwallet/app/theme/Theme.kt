@@ -85,7 +85,7 @@ private val DarkColorScheme = darkColorScheme(
 
 @Composable
 internal fun KBWalletTheme(
-    darkTheme: Boolean = isSystemInDarkTheme(),
+    darkTheme: Boolean = true,
     content: @Composable () -> Unit
 ) {
     val colorScheme = if (darkTheme) DarkColorScheme else LightColorScheme

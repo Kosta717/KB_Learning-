@@ -8,6 +8,8 @@ import dev.kbwallet.app.core.domain.Result
 import dev.kbwallet.app.core.domain.onError
 import dev.kbwallet.app.core.domain.onSuccess
 import dev.kbwallet.app.portfolio.data.local.PortfolioDao
+import dev.kbwallet.app.portfolio.data.local.TransactionDao
+import dev.kbwallet.app.portfolio.data.local.TransactionEntity
 import dev.kbwallet.app.portfolio.data.local.UserBalanceDao
 import dev.kbwallet.app.portfolio.data.local.UserBalanceEntity
 import dev.kbwallet.app.portfolio.data.mapper.toPortfolioCoinEntity
@@ -24,6 +26,7 @@ import kotlinx.coroutines.flow.flow
 class PortfolioRepositoryImpl(
     private val portfolioDao: PortfolioDao,
     private val userBalanceDao: UserBalanceDao,
+    private val transactionDao: TransactionDao,
     private val coinsRemoteDataSource: CoinsRemoteDataSource,
 ) : PortfolioRepository {
 
@@ -146,5 +149,13 @@ class PortfolioRepositoryImpl(
 
     override suspend fun updateCashBalance(newBalance: Double) {
         userBalanceDao.updateCashBalance(newBalance)
+    }
+
+    override fun getTransactions(): Flow<List<TransactionEntity>> {
+        return transactionDao.getAllTransactions()
+    }
+
+    override suspend fun saveTransaction(transaction: TransactionEntity) {
+        transactionDao.insertTransaction(transaction)
     }
 }

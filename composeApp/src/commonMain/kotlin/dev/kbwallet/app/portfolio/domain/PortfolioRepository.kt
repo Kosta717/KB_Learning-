@@ -17,4 +17,7 @@ interface PortfolioRepository {
     fun totalBalanceFlow(): Flow<Result<Double, DataError.Remote>>
     fun cashBalanceFlow(): Flow<Double>
     suspend fun updateCashBalance(newBalance: Double)
+
+    fun getTransactions(): Flow<List<dev.kbwallet.app.portfolio.data.local.TransactionEntity>>
+    suspend fun saveTransaction(transaction: dev.kbwallet.app.portfolio.data.local.TransactionEntity)
 }

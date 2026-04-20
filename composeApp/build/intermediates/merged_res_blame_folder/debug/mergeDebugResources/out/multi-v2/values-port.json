@@ -1,0 +1,19 @@
+{
+    "logs": [
+        {
+            "outputFile": "dev.kbwallet.app.composeApp-mergeDebugResources-63:/values-port/values-port.xml",
+            "map": [
+                {
+                    "source": "/home/quartz/.gradle/caches/8.9/transforms/4be73798caf7610148b503e0f951cd1b/transformed/appcompat-1.7.0/res/values-port/values-port.xml",
+                    "from": {
+                        "startLines": "2",
+                        "startColumns": "4",
+                        "startOffsets": "55",
+                        "endColumns": "55",
+                        "endOffsets": "106"
+                    }
+                }
+            ]
+        }
+    ]
+}

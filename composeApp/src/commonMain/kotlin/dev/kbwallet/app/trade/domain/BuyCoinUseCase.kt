@@ -7,6 +7,8 @@ import dev.kbwallet.app.core.domain.coin.Coin
 import dev.kbwallet.app.portfolio.domain.PortfolioCoinModel
 import dev.kbwallet.app.portfolio.domain.PortfolioRepository
 import kotlinx.coroutines.flow.first
+import kotlinx.datetime.Clock
+import dev.kbwallet.app.portfolio.data.local.TransactionEntity
 
 class BuyCoinUseCase(
     private val portfolioRepository: PortfolioRepository,
@@ -51,6 +53,20 @@ class BuyCoinUseCase(
             )
         }
         portfolioRepository.updateCashBalance(balance - amountInFiat)
+        
+        portfolioRepository.saveTransaction(
+            TransactionEntity(
+                type = "BUY",
+                coinId = coin.id,
+                coinName = coin.name,
+                coinSymbol = coin.symbol,
+                amountFiat = amountInFiat,
+                amountCrypto = amountInUnit,
+                price = price,
+                timestamp = Clock.System.now().toEpochMilliseconds()
+            )
+        )
+        
         return Result.Success(Unit)
     }
 }

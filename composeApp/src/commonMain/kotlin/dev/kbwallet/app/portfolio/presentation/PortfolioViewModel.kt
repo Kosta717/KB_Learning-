@@ -91,7 +91,9 @@ class PortfolioViewModel(
             amountInUnitText = formatCoinUnit(ownedAmountInUnit, coin.symbol),
             amountInFiatText = formatFiat(ownedAmountInFiat),
             performancePercentText = formatPercentage(performancePercent),
-            isPositive = performancePercent >= 0
+            isPositive = performancePercent >= 0,
+            amountInFiat = ownedAmountInFiat,
+            symbol = coin.symbol
         )
     }
 }

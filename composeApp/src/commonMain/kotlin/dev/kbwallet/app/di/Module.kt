@@ -56,7 +56,9 @@ val sharedModule = module {
     singleOf(::PortfolioRepositoryImpl).bind<PortfolioRepository>()
     single { get<PortfolioDatabase>().portfolioDao() }
     single { get<PortfolioDatabase>().userBalanceDao() }
+    single { get<PortfolioDatabase>().transactionDao() }
     viewModel { PortfolioViewModel(get()) }
+    viewModel { dev.kbwallet.app.history.presentation.HistoryViewModel(get()) }
 
     // coins list
     viewModel { CoinsListViewModel(get(), get()) }

@@ -8,9 +8,13 @@ import dev.kbwallet.app.portfolio.data.local.PortfolioDao
 import dev.kbwallet.app.portfolio.data.local.UserBalanceDao
 import dev.kbwallet.app.portfolio.data.local.UserBalanceEntity
 
+import dev.kbwallet.app.portfolio.data.local.TransactionEntity
+import dev.kbwallet.app.portfolio.data.local.TransactionDao
+
 @ConstructedBy(PortfolioDatabaseCreator::class)
-@Database(entities = [PortfolioCoinEntity::class, UserBalanceEntity::class], version = 2)
+@Database(entities = [PortfolioCoinEntity::class, UserBalanceEntity::class, TransactionEntity::class], version = 3)
 abstract class PortfolioDatabase: RoomDatabase() {
     abstract fun portfolioDao(): PortfolioDao
     abstract fun userBalanceDao(): UserBalanceDao
+    abstract fun transactionDao(): TransactionDao
 }

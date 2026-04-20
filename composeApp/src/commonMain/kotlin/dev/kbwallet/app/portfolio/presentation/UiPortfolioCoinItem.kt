@@ -8,4 +8,6 @@ data class UiPortfolioCoinItem(
     val amountInFiatText: String,
     val performancePercentText: String,
     val isPositive: Boolean,
+    val amountInFiat: Double = 0.0,
+    val symbol: String = "",
 )
