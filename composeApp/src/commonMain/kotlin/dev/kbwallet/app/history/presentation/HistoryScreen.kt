@@ -20,16 +20,11 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDownward
 import androidx.compose.material.icons.filled.ArrowUpward
-import androidx.compose.material.icons.filled.FilterAlt
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -48,63 +43,54 @@ import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 import org.koin.compose.viewmodel.koinViewModel
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HistoryScreen() {
     val viewModel = koinViewModel<HistoryViewModel>()
     val state by viewModel.state.collectAsStateWithLifecycle()
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("Transaction History", fontWeight = FontWeight.Bold) },
-                actions = {
-                    IconButton(onClick = { /*TODO*/ }) {
-                        Icon(Icons.Default.FilterAlt, contentDescription = "Filter")
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.background,
-                    titleContentColor = MaterialTheme.colorScheme.onBackground,
-                    actionIconContentColor = MaterialTheme.colorScheme.onBackground
-                )
-            )
-        },
-        containerColor = MaterialTheme.colorScheme.background
-    ) { paddingValues ->
-        if (state.isLoading) {
-            Box(
-                contentAlignment = Alignment.Center,
-                modifier = Modifier.fillMaxSize().padding(paddingValues)
-            ) {
-                CircularProgressIndicator(
-                    color = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.size(32.dp)
-                )
-            }
-        } else {
-            HistoryContent(
-                state = state,
-                modifier = Modifier.padding(paddingValues)
+    if (state.isLoading) {
+        Box(
+            contentAlignment = Alignment.Center,
+            modifier = Modifier
+                .fillMaxSize()
+                .background(MaterialTheme.colorScheme.background)
+        ) {
+            CircularProgressIndicator(
+                color = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.size(32.dp)
             )
         }
+    } else {
+        HistoryContent(state = state)
     }
 }
 
 @Composable
 fun HistoryContent(
-    state: HistoryState,
-    modifier: Modifier = Modifier
+    state: HistoryState
 ) {
     LazyColumn(
-        modifier = modifier.fillMaxSize(),
+        modifier = Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background),
         contentPadding = PaddingValues(16.dp),
-        verticalArrangement = Arrangement.spacedBy(24.dp)
+        verticalArrangement = Arrangement.spacedBy(20.dp)
     ) {
+        // Title
+        item {
+            Text(
+                text = "Transaction History",
+                style = MaterialTheme.typography.headlineMedium,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onBackground
+            )
+        }
+
+        // Stats row
         item {
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(16.dp)
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 StatCard(
                     title = "Total Trades",
@@ -126,6 +112,7 @@ fun HistoryContent(
             }
         }
 
+        // Section header
         item {
             Text(
                 text = "Recent Transactions",
@@ -133,6 +120,34 @@ fun HistoryContent(
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onBackground
             )
+        }
+
+        if (state.transactions.isEmpty()) {
+            item {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(16.dp))
+                        .background(MaterialTheme.colorScheme.surface)
+                        .padding(32.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text(
+                            text = "No transactions yet",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.SemiBold,
+                            color = MaterialTheme.colorScheme.onBackground
+                        )
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = "Your buy and sell history will appear here",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = Color.Gray
+                        )
+                    }
+                }
+            }
         }
 
         items(state.transactions) { transaction ->
@@ -175,15 +190,20 @@ fun StatCard(
 fun TransactionItem(transaction: TransactionEntity) {
     val isBuy = transaction.type == "BUY"
     val icon = if (isBuy) Icons.Default.ArrowDownward else Icons.Default.ArrowUpward
-    val iconBgColor = if (isBuy) MaterialTheme.colorScheme.primary.copy(alpha = 0.2f) else LocalKBWalletColorsPalette.current.lossRed.copy(alpha = 0.2f)
-    val iconColor = if (isBuy) MaterialTheme.colorScheme.primary else LocalKBWalletColorsPalette.current.lossRed
-    val amountColor = if (isBuy) MaterialTheme.colorScheme.primary else LocalKBWalletColorsPalette.current.lossRed
+    val accentColor = if (isBuy)
+        MaterialTheme.colorScheme.primary
+    else
+        LocalKBWalletColorsPalette.current.lossRed
     val amountPrefix = if (isBuy) "-" else "+"
-    
+
     // Format timestamp
     val instant = Instant.fromEpochMilliseconds(transaction.timestamp)
     val localDateTime = instant.toLocalDateTime(TimeZone.currentSystemDefault())
-    val dateStr = "${localDateTime.month.name.take(3)} ${localDateTime.dayOfMonth}, ${localDateTime.hour.toString().padStart(2, '0')}:${localDateTime.minute.toString().padStart(2, '0')}"
+    val monthName = localDateTime.month.name.take(3).lowercase()
+        .replaceFirstChar { it.uppercase() }
+    val dateStr = "$monthName ${localDateTime.dayOfMonth}, " +
+            "${localDateTime.hour.toString().padStart(2, '0')}:" +
+            localDateTime.minute.toString().padStart(2, '0')
 
     Box(
         modifier = Modifier
@@ -193,61 +213,72 @@ fun TransactionItem(transaction: TransactionEntity) {
             .padding(16.dp)
     ) {
         Column {
+            // Top row: icon + name + amounts
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Box(
                     modifier = Modifier
                         .size(40.dp)
                         .clip(CircleShape)
-                        .background(iconBgColor),
+                        .background(accentColor.copy(alpha = 0.15f)),
                     contentAlignment = Alignment.Center
                 ) {
-                    Icon(icon, contentDescription = transaction.type, tint = iconColor, modifier = Modifier.size(24.dp))
+                    Icon(
+                        icon,
+                        contentDescription = transaction.type,
+                        tint = accentColor,
+                        modifier = Modifier.size(22.dp)
+                    )
                 }
-                Spacer(modifier = Modifier.width(16.dp))
+                Spacer(modifier = Modifier.width(14.dp))
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
                         text = "${transaction.type.lowercase().replaceFirstChar { it.uppercase() }} ${transaction.coinName}",
                         color = MaterialTheme.colorScheme.onBackground,
-                        style = MaterialTheme.typography.titleMedium,
+                        style = MaterialTheme.typography.titleSmall,
                         fontWeight = FontWeight.SemiBold
                     )
-                    Spacer(modifier = Modifier.height(4.dp))
+                    Spacer(modifier = Modifier.height(2.dp))
                     Text(
                         text = dateStr,
                         color = Color.Gray,
-                        style = MaterialTheme.typography.bodyMedium
+                        style = MaterialTheme.typography.bodySmall
                     )
                 }
                 Column(horizontalAlignment = Alignment.End) {
                     Text(
                         text = "$amountPrefix${formatFiat(transaction.amountFiat)}",
-                        color = amountColor,
-                        style = MaterialTheme.typography.titleMedium,
+                        color = accentColor,
+                        style = MaterialTheme.typography.titleSmall,
                         fontWeight = FontWeight.SemiBold
                     )
-                    Spacer(modifier = Modifier.height(4.dp))
-                    // Format crypto amount to avoid long decimals
+                    Spacer(modifier = Modifier.height(2.dp))
                     val cryptoStr = ((transaction.amountCrypto * 100000).toLong() / 100000.0).toString()
                     Text(
                         text = "$cryptoStr ${transaction.coinSymbol.uppercase()}",
                         color = Color.Gray,
-                        style = MaterialTheme.typography.bodyMedium
+                        style = MaterialTheme.typography.bodySmall
                     )
                 }
             }
-            
-            Spacer(modifier = Modifier.height(16.dp))
-            androidx.compose.material3.HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
-            Spacer(modifier = Modifier.height(16.dp))
-            
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+
+            Spacer(modifier = Modifier.height(14.dp))
+            HorizontalDivider(
+                color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f)
+            )
+            Spacer(modifier = Modifier.height(14.dp))
+
+            // Bottom row: price + status
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
                 Column {
                     Text(
                         text = "Price",
                         color = Color.Gray,
                         style = MaterialTheme.typography.bodySmall
                     )
-                    Spacer(modifier = Modifier.height(4.dp))
+                    Spacer(modifier = Modifier.height(2.dp))
                     Text(
                         text = formatFiat(transaction.price),
                         color = MaterialTheme.colorScheme.onBackground,
@@ -261,13 +292,18 @@ fun TransactionItem(transaction: TransactionEntity) {
                         color = Color.Gray,
                         style = MaterialTheme.typography.bodySmall
                     )
-                    Spacer(modifier = Modifier.height(4.dp))
+                    Spacer(modifier = Modifier.height(2.dp))
                     Text(
                         text = "Completed",
                         color = MaterialTheme.colorScheme.primary,
-                        style = MaterialTheme.typography.bodyMedium,
+                        style = MaterialTheme.typography.bodySmall,
                         fontWeight = FontWeight.SemiBold,
-                        modifier = Modifier.background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f), RoundedCornerShape(4.dp)).padding(horizontal = 8.dp, vertical = 2.dp)
+                        modifier = Modifier
+                            .background(
+                                MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
+                                RoundedCornerShape(6.dp)
+                            )
+                            .padding(horizontal = 10.dp, vertical = 4.dp)
                     )
                 }
             }

@@ -16,15 +16,23 @@ import dev.kbwallet.app.coins.presentation.CoinListScreen
 import dev.kbwallet.app.core.navigation.Buy
 import dev.kbwallet.app.core.navigation.Coins
 import dev.kbwallet.app.core.navigation.Dashboard
+import dev.kbwallet.app.core.navigation.EditProfile
+import dev.kbwallet.app.core.navigation.HelpSupport
 import dev.kbwallet.app.core.navigation.History
+import dev.kbwallet.app.core.navigation.NotificationSettings
 import dev.kbwallet.app.core.navigation.Portfolio
 import dev.kbwallet.app.core.navigation.Profile
+import dev.kbwallet.app.core.navigation.SecuritySettings
 import dev.kbwallet.app.core.navigation.Sell
 import dev.kbwallet.app.core.presentation.component.BottomNavigationBar
 import dev.kbwallet.app.dashboard.presentation.DashboardScreen
 import dev.kbwallet.app.history.presentation.HistoryScreen
 import dev.kbwallet.app.portfolio.presentation.PortfolioScreen
+import dev.kbwallet.app.profile.presentation.EditProfileScreen
+import dev.kbwallet.app.profile.presentation.HelpSupportScreen
+import dev.kbwallet.app.profile.presentation.NotificationSettingsScreen
 import dev.kbwallet.app.profile.presentation.ProfileScreen
+import dev.kbwallet.app.profile.presentation.SecuritySettingsScreen
 import dev.kbwallet.app.theme.KBWalletTheme
 import dev.kbwallet.app.trade.presentation.buy.BuyScreen
 import dev.kbwallet.app.trade.presentation.sell.SellScreen
@@ -83,7 +91,28 @@ fun App() {
                 }
 
                 composable<Profile> {
-                    ProfileScreen()
+                    ProfileScreen(
+                        onEditProfile = { navController.navigate(EditProfile) },
+                        onNotifications = { navController.navigate(NotificationSettings) },
+                        onSecurity = { navController.navigate(SecuritySettings) },
+                        onHelp = { navController.navigate(HelpSupport) }
+                    )
+                }
+
+                composable<EditProfile> {
+                    EditProfileScreen(onBack = { navController.popBackStack() })
+                }
+
+                composable<NotificationSettings> {
+                    NotificationSettingsScreen(onBack = { navController.popBackStack() })
+                }
+
+                composable<SecuritySettings> {
+                    SecuritySettingsScreen(onBack = { navController.popBackStack() })
+                }
+
+                composable<HelpSupport> {
+                    HelpSupportScreen(onBack = { navController.popBackStack() })
                 }
 
                 composable<Coins> {

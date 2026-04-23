@@ -24,3 +24,15 @@ data class Buy(val coinId: String)
 
 @Serializable
 data class Sell(val coinId: String)
+
+@Serializable
+object EditProfile
+
+@Serializable
+object NotificationSettings
+
+@Serializable
+object SecuritySettings
+
+@Serializable
+object HelpSupport

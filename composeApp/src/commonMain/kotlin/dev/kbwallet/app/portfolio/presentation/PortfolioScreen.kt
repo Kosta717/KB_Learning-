@@ -19,21 +19,15 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -54,7 +48,6 @@ import dev.kbwallet.app.theme.LocalKBWalletColorsPalette
 import org.koin.compose.viewmodel.koinViewModel
 import kotlin.math.roundToInt
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PortfolioScreen(
     onCoinItemClicked: (String) -> Unit,
@@ -63,66 +56,60 @@ fun PortfolioScreen(
     val portfolioViewModel = koinViewModel<PortfolioViewModel>()
     val state by portfolioViewModel.state.collectAsStateWithLifecycle()
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("Portfolio", fontWeight = FontWeight.Bold) },
-                actions = {
-                    IconButton(onClick = { /*TODO*/ }) {
-                        Icon(Icons.Default.MoreVert, contentDescription = "Menu")
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.background,
-                    titleContentColor = MaterialTheme.colorScheme.onBackground,
-                    actionIconContentColor = MaterialTheme.colorScheme.onBackground
-                )
-            )
-        },
-        containerColor = MaterialTheme.colorScheme.background
-    ) { paddingValues ->
-        if (state.isLoading) {
-            Box(
-                contentAlignment = Alignment.Center,
-                modifier = Modifier.fillMaxSize().padding(paddingValues)
-            ) {
-                CircularProgressIndicator(
-                    color = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.size(32.dp)
-                )
-            }
-        } else {
-            PortfolioContent(
-                state = state,
-                modifier = Modifier.padding(paddingValues),
-                onCoinItemClicked = onCoinItemClicked,
-                onDiscoverCoinsClicked = onDiscoverCoinsClicked
+    if (state.isLoading) {
+        Box(
+            contentAlignment = Alignment.Center,
+            modifier = Modifier
+                .fillMaxSize()
+                .background(MaterialTheme.colorScheme.background)
+        ) {
+            CircularProgressIndicator(
+                color = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.size(32.dp)
             )
         }
+    } else {
+        PortfolioContent(
+            state = state,
+            onCoinItemClicked = onCoinItemClicked,
+            onDiscoverCoinsClicked = onDiscoverCoinsClicked
+        )
     }
 }
 
 @Composable
 fun PortfolioContent(
     state: PortfolioState,
-    modifier: Modifier = Modifier,
     onCoinItemClicked: (String) -> Unit,
     onDiscoverCoinsClicked: () -> Unit,
 ) {
     var searchQuery by remember { mutableStateOf("") }
-    
+
     LazyColumn(
-        modifier = modifier.fillMaxSize(),
+        modifier = Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background),
         contentPadding = PaddingValues(16.dp),
-        verticalArrangement = Arrangement.spacedBy(24.dp)
+        verticalArrangement = Arrangement.spacedBy(20.dp)
     ) {
+        // Header
         item {
-            PortfolioBalanceSection(
-                portfolioValue = state.portfolioValue,
-                totalChange = "+5.67% (24h)" // Mocked for UI
+            Text(
+                text = "Portfolio",
+                style = MaterialTheme.typography.headlineMedium,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onBackground
             )
         }
 
+        // Balance section
+        item {
+            PortfolioBalanceSection(
+                portfolioValue = state.portfolioValue
+            )
+        }
+
+        // Asset distribution
         item {
             if (state.coins.isNotEmpty()) {
                 AssetDistributionCard(coins = state.coins)
@@ -131,6 +118,7 @@ fun PortfolioContent(
             }
         }
 
+        // Search
         item {
             OutlinedTextField(
                 value = searchQuery,
@@ -142,10 +130,12 @@ fun PortfolioContent(
                 colors = OutlinedTextFieldDefaults.colors(
                     unfocusedBorderColor = MaterialTheme.colorScheme.outline,
                     focusedBorderColor = MaterialTheme.colorScheme.primary,
-                )
+                ),
+                singleLine = true
             )
         }
 
+        // Your Holdings
         item {
             Text(
                 text = "Your Holdings",
@@ -156,7 +146,8 @@ fun PortfolioContent(
         }
 
         val filteredCoins = state.coins.filter {
-            it.name.contains(searchQuery, ignoreCase = true) || it.symbol.contains(searchQuery, ignoreCase = true)
+            it.name.contains(searchQuery, ignoreCase = true) ||
+                    it.symbol.contains(searchQuery, ignoreCase = true)
         }
 
         items(filteredCoins) { coin ->
@@ -170,27 +161,20 @@ fun PortfolioContent(
 
 @Composable
 private fun PortfolioBalanceSection(
-    portfolioValue: String,
-    totalChange: String
+    portfolioValue: String
 ) {
     Column {
         Text(
             text = "Total Portfolio Value",
             color = Color.Gray,
-            style = MaterialTheme.typography.titleMedium
+            style = MaterialTheme.typography.titleSmall
         )
-        Spacer(modifier = Modifier.height(8.dp))
+        Spacer(modifier = Modifier.height(4.dp))
         Text(
             text = portfolioValue,
             color = MaterialTheme.colorScheme.onBackground,
             style = MaterialTheme.typography.headlineLarge,
             fontWeight = FontWeight.Bold
-        )
-        Spacer(modifier = Modifier.height(8.dp))
-        Text(
-            text = "↗ $totalChange", // Simple mock
-            color = MaterialTheme.colorScheme.primary,
-            style = MaterialTheme.typography.titleSmall
         )
     }
 }
@@ -200,22 +184,21 @@ fun AssetDistributionCard(coins: List<UiPortfolioCoinItem>) {
     val totalFiat = coins.sumOf { it.amountInFiat }
     val sortedCoins = coins.sortedByDescending { it.amountInFiat }
     val chartValues = sortedCoins.map { it.amountInFiat.toFloat() }
-    
-    // Generate different shades of green based on the primary color for the donut chart
-    val colors = listOf(
-        MaterialTheme.colorScheme.primary,
-        MaterialTheme.colorScheme.secondary,
-        MaterialTheme.colorScheme.tertiary,
-        Color(0xFF00FF00).copy(alpha = 0.5f),
-        Color(0xFF00FF00).copy(alpha = 0.3f),
+
+    val chartColors = listOf(
+        Color(0xFF00CC00),
+        Color(0xFF00FF66),
+        Color(0xFF66FF66),
+        Color(0xFF33CC33),
+        Color(0xFF009900),
     )
 
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(24.dp))
+            .clip(RoundedCornerShape(20.dp))
             .background(MaterialTheme.colorScheme.surface)
-            .padding(24.dp)
+            .padding(20.dp)
     ) {
         Column {
             Text(
@@ -224,45 +207,65 @@ fun AssetDistributionCard(coins: List<UiPortfolioCoinItem>) {
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onBackground
             )
-            Spacer(modifier = Modifier.height(16.dp))
-            
-            Box(modifier = Modifier.fillMaxWidth().height(200.dp), contentAlignment = Alignment.Center) {
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(180.dp),
+                contentAlignment = Alignment.Center
+            ) {
                 DonutChart(
                     values = chartValues,
-                    colors = colors
+                    colors = chartColors,
+                    strokeWidth = 36f
                 )
             }
-            
-            Spacer(modifier = Modifier.height(24.dp))
-            
-            // Legend
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Legend — 2 items per row
             val rows = sortedCoins.chunked(2)
-            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 rows.forEach { row ->
-                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                        row.forEachIndexed { index, coin ->
-                            val color = colors.getOrElse(sortedCoins.indexOf(coin)) { Color.Gray }
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        row.forEachIndexed { _, coin ->
+                            val colorIdx = sortedCoins.indexOf(coin)
+                            val color = chartColors.getOrElse(colorIdx) { Color.Gray }
                             val percentage = if (totalFiat > 0) (coin.amountInFiat / totalFiat * 100) else 0.0
-                            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.weight(1f)) {
-                                Box(modifier = Modifier.size(10.dp).clip(CircleShape).background(color))
-                                Spacer(modifier = Modifier.width(8.dp))
+
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                modifier = Modifier.weight(1f)
+                            ) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(10.dp)
+                                        .clip(CircleShape)
+                                        .background(color)
+                                )
+                                Spacer(modifier = Modifier.width(6.dp))
                                 Text(
                                     text = coin.symbol.uppercase(),
                                     color = Color.Gray,
-                                    fontSize = 14.sp
+                                    fontSize = 13.sp
                                 )
                                 Spacer(modifier = Modifier.weight(1f))
                                 Text(
                                     text = "${((percentage * 10).roundToInt() / 10.0)}%",
                                     color = MaterialTheme.colorScheme.onBackground,
-                                    fontSize = 14.sp,
+                                    fontSize = 13.sp,
                                     fontWeight = FontWeight.SemiBold
                                 )
-                                Spacer(modifier = Modifier.width(16.dp))
+                                Spacer(modifier = Modifier.width(12.dp))
                             }
                         }
                         if (row.size == 1) {
-                            Spacer(modifier = Modifier.weight(1f)) // Padding for odd number of items
+                            Spacer(modifier = Modifier.weight(1f))
                         }
                     }
                 }
@@ -276,51 +279,53 @@ fun CoinListItem(
     coin: UiPortfolioCoinItem,
     onCoinItemClicked: (String) -> Unit,
 ) {
-    Box(
+    Row(
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(16.dp))
             .background(MaterialTheme.colorScheme.surface)
-            .clickable { onCoinItemClicked.invoke(coin.id) }
-            .padding(16.dp)
+            .clickable { onCoinItemClicked(coin.id) }
+            .padding(14.dp),
+        verticalAlignment = Alignment.CenterVertically
     ) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            AsyncImage(
-                model = coin.iconUrl,
-                contentDescription = null,
-                contentScale = ContentScale.Fit,
-                modifier = Modifier.size(48.dp).clip(CircleShape).background(Color(0xFF2A2A2A)).padding(8.dp)
+        AsyncImage(
+            model = coin.iconUrl,
+            contentDescription = null,
+            contentScale = ContentScale.Fit,
+            modifier = Modifier
+                .size(44.dp)
+                .clip(CircleShape)
+                .background(Color(0xFF2A2A2A))
+                .padding(6.dp)
+        )
+        Spacer(modifier = Modifier.width(14.dp))
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = coin.name,
+                color = MaterialTheme.colorScheme.onBackground,
+                style = MaterialTheme.typography.titleSmall,
+                fontWeight = FontWeight.SemiBold
             )
-            Spacer(modifier = Modifier.width(16.dp))
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = coin.name,
-                    color = MaterialTheme.colorScheme.onBackground,
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.SemiBold
-                )
-                Spacer(modifier = Modifier.height(4.dp))
-                Text(
-                    text = coin.symbol.uppercase(),
-                    color = Color.Gray,
-                    style = MaterialTheme.typography.bodyMedium
-                )
-            }
-            Column(horizontalAlignment = Alignment.End) {
-                Text(
-                    text = coin.amountInFiatText,
-                    color = MaterialTheme.colorScheme.onBackground,
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.SemiBold
-                )
-                Spacer(modifier = Modifier.height(4.dp))
-                val isPositive = coin.isPositive
-                Text(
-                    text = (if (isPositive) "↗ " else "↘ ") + coin.performancePercentText,
-                    color = if (isPositive) MaterialTheme.colorScheme.primary else LocalKBWalletColorsPalette.current.lossRed,
-                    style = MaterialTheme.typography.bodyMedium
-                )
-            }
+            Spacer(modifier = Modifier.height(2.dp))
+            Text(
+                text = coin.symbol.uppercase(),
+                color = Color.Gray,
+                style = MaterialTheme.typography.bodySmall
+            )
+        }
+        Column(horizontalAlignment = Alignment.End) {
+            Text(
+                text = coin.amountInFiatText,
+                color = MaterialTheme.colorScheme.onBackground,
+                style = MaterialTheme.typography.titleSmall,
+                fontWeight = FontWeight.SemiBold
+            )
+            Spacer(modifier = Modifier.height(2.dp))
+            Text(
+                text = (if (coin.isPositive) "↗ " else "↘ ") + coin.performancePercentText,
+                color = if (coin.isPositive) LocalKBWalletColorsPalette.current.profitGreen else LocalKBWalletColorsPalette.current.lossRed,
+                style = MaterialTheme.typography.bodySmall
+            )
         }
     }
 }
@@ -331,15 +336,23 @@ fun PortfolioEmptySection(
 ) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center,
         modifier = Modifier
             .fillMaxWidth()
+            .clip(RoundedCornerShape(20.dp))
+            .background(MaterialTheme.colorScheme.surface)
             .padding(32.dp)
     ) {
         Text(
-            text = "Your portfolio is empty.",
+            text = "Your portfolio is empty",
+            color = MaterialTheme.colorScheme.onBackground,
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.SemiBold
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+        Text(
+            text = "Start by discovering coins to trade",
             color = Color.Gray,
-            fontSize = MaterialTheme.typography.titleMedium.fontSize
+            style = MaterialTheme.typography.bodyMedium
         )
         Spacer(modifier = Modifier.height(16.dp))
         Button(
@@ -348,7 +361,7 @@ fun PortfolioEmptySection(
                 containerColor = MaterialTheme.colorScheme.primary,
                 contentColor = MaterialTheme.colorScheme.onPrimary
             ),
-            shape = RoundedCornerShape(16.dp)
+            shape = RoundedCornerShape(12.dp)
         ) {
             Text("Discover Coins")
         }
